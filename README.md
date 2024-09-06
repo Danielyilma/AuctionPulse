@@ -15,31 +15,34 @@ This is a web-based auction platform designed to facilitate the buying and selli
 
 - clone the repository: 
 
-''' bash
-git clone https://github.com/Danielyilma/AuctionPulse.git
-'''
+    ``` bash
+    git clone https://github.com/Danielyilma/AuctionPulse.git
+    ```
+
 
 - navigate to the project directory
 
-''' bash
-cd AuctionPulse
-'''
+    ``` bash
+    cd AuctionPulse
+    ```
+
 
 - install dependencies
 
-''' bash
-pip install -r requirement.txt
-'''
+    ``` bash
+    pip install -r requirements.txt
+    ```
 
 - migrate model schema's
 
-''' bash
-python manage.py makemigrations
+    ``` bash
+    python manage.py makemigrations
 
-python manage.py migrate
+    python manage.py migrate
+    ```
 
 - running the server
 
-''' bash
-python manage.py runserver
-'''
+    ``` bash
+    python manage.py runserver
+    ```
