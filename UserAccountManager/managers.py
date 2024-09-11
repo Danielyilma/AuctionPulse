@@ -1,8 +1,16 @@
+'''Defining UserManager class'''
 from django.contrib.auth.models import BaseUserManager
 
-class UserManager(BaseUserManager):
 
-    def create(self, email, password, **extra_fields):
+class UserManager(BaseUserManager):
+    '''
+    UserManager that implements
+        create : create the user any user
+        user create : handles necessary check for normal user creation
+        super user create : checks for superuser creation
+    '''
+
+    def create(self, email, password=None, **extra_fields):
         if not email:
             raise ValueError('The given email must be set')
 
@@ -13,7 +21,7 @@ class UserManager(BaseUserManager):
 
         return user
 
-    def create_user(self, email, password, **extra_fields):
+    def create_user(self, email=None, password=None, **extra_fields):
         extra_fields.setdefault('is_susperuser', False)
 
         if extra_fields.get('is_superuser') is True:
@@ -21,7 +29,7 @@ class UserManager(BaseUserManager):
 
         return self.create(email, password, **extra_fields)
     
-    def create_superuser(self, email, password, **extra_fields):
+    def create_superuser(self, email=None, password=None, **extra_fields):
         extra_fields.setdefault('is_staff', True)
         extra_fields.setdefault('is_superuser', True)
 
