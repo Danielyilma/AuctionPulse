@@ -4,7 +4,7 @@ from uuid import uuid4
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
 from django.core.validators import validate_email
 from django.contrib.auth.validators import UnicodeUsernameValidator
-from UserAccountManager.base_model import TimeStampMixin
+from base_model import TimeStampMixin
 from UserAccountManager.managers import UserManager
 
 class User(AbstractBaseUser, PermissionsMixin, TimeStampMixin):
