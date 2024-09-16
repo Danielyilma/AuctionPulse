@@ -4,7 +4,7 @@ from rest_framework.serializers import ValidationError
 from drf_spectacular.utils import extend_schema
 from .serializers import AuctionSerializer, ImageSerializer, BidSerializer
 from .models import Auction, Image
-from .service import update_auction
+from .service import update_auction, push_bidinfo
 from .doc_schema import auction_creation_schema
 
 
@@ -82,4 +82,8 @@ class BidSubmissionView(generics.CreateAPIView):
         update_auction(auction, bid_amount)
         
         bidder = self.request.user
+
+        # Push bid information to the channel layer
+        push_bidinfo(bidder.id, serializer.validated_data)
+
         serializer.save(bidder=bidder)

@@ -18,7 +18,7 @@ SECRET_KEY = 'django-insecure-d9a3ljgl2_ke%^so-av3vid%t8r4_t5+-!!p5_00a%%m0h!crp
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -90,6 +90,14 @@ SPECTACULAR_SETTINGS = {
     # OTHER SETTINGS
 }
 
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [("127.0.0.1", 6379)],
+        },
+    },
+}
 
 # Celery settings
 CELERY_BROKER_URL = 'redis://localhost:6379/0'
