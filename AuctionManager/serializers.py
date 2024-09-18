@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from drf_spectacular.utils import extend_schema_serializer
 from .models import Item, Auction, Image, Bid
-from .service import schedule_auction_tasks, adjust_timezone
+from .services import schedule_auction_tasks, adjust_timezone
 
 
 class BidSerializer(serializers.ModelSerializer):

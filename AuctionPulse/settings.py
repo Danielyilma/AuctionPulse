@@ -33,6 +33,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'UserAccountManager',
     'AuctionManager',
+    'Payments',
     'rest_framework',
     'drf_spectacular',
     'rest_framework_simplejwt',
@@ -193,3 +194,10 @@ SOCIAL_AUTH_GOOGLE_OAUTH2_SCOPE = [
 SOCIAL_AUTH_GOOGLE_OAUTH2_REDIRECT_URI = 'http://127.0.0.1:8000/api/user/oauth/google/callback/'
 SOCIAL_AUTH_GOOGLE_OAUTH2_AUTHORIZATION_ENDPOINT = 'https://accounts.google.com/o/oauth2/v2/auth'
 GOOGLE_ACCESS_TOKEN_OBTAIN_URI = 'https://oauth2.googleapis.com/token'
+
+# payment related setting
+APP_CALLBACK_URL_FORCHAPA = 'http://127.0.0.1:8000/api/payment/verify'
+CHAPA_INIT_URL = 'https://api.chapa.co/v1/transaction/initialize'
+CHAPA_SECRET_KEY = os.getenv('CHAPA_SECRET_KEY')
+CHAPA_VERIFIY_URL = 'https://api.chapa.co/v1/transaction/verify/'
+CHAPA_TRANSFER_INIT_URL = 'https://api.chapa.co/v1/transfers'

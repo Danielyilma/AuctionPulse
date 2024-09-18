@@ -4,7 +4,7 @@ from rest_framework.serializers import ValidationError
 from drf_spectacular.utils import extend_schema
 from .serializers import AuctionSerializer, ImageSerializer, BidSerializer
 from .models import Auction, Image
-from .service import update_auction, push_bidinfo
+from .services import update_auction, push_bidinfo
 from .doc_schema import auction_creation_schema
 
 
