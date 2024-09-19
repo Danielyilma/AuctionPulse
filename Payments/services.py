@@ -2,6 +2,7 @@ from django.conf import settings
 import requests
 from UserAccountManager.serializers import UserSerializer
 from .models import Payment
+from notifications.tasks import payment_notification
 
 class ChapaPaymentService():
     '''Chapa payment service'''

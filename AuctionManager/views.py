@@ -4,8 +4,10 @@ from rest_framework.serializers import ValidationError
 from drf_spectacular.utils import extend_schema
 from .serializers import AuctionSerializer, ImageSerializer, BidSerializer
 from .models import Auction, Image
-from .services import update_auction, push_bidinfo
+from .services import update_auction
+from .tasks import push_bidinfo
 from .doc_schema import auction_creation_schema
+from notifications.tasks import notify_user_of_bid, bid_confirmation
 
 
 @extend_schema(
@@ -76,14 +78,20 @@ class BidSubmissionView(generics.CreateAPIView):
         auction = serializer.validated_data['auction']
 
         if not auction.is_active:
-            raise ValidationError('Cannot place a bid on a closed auction.')
-
-        bid_amount = serializer.validated_data['amount']
-        update_auction(auction, bid_amount)
+            raise ValidationError('Cannot place a bid on a closed or upcoming auction.')
         
         bidder = self.request.user
 
+        if bidder == auction.seller:
+            raise ValidationError('Seller Cannot place a bid on his auction item.')
+
+        bid_amount = serializer.validated_data['amount']
+        update_auction(auction, bid_amount)
+
         # Push bid information to the channel layer
-        push_bidinfo(bidder.id, serializer.validated_data)
+        auction_serializer = AuctionSerializer(serializer.validated_data.get('auction'))
+        push_bidinfo.delay(bidder.id, auction_serializer.data)
+        notify_user_of_bid.delay(bidder.id, auction.id)
+        bid_confirmation.delay(bidder.id, auction.id)
 
         serializer.save(bidder=bidder)

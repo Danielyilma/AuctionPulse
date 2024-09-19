@@ -2,10 +2,7 @@ from django.db import transaction
 from django.utils import timezone
 from rest_framework.serializers import ValidationError
 from datetime import datetime
-from channels.layers import get_channel_layer
-from asgiref.sync import async_to_sync
 import pytz
-import json
 from .tasks import start_auction, end_auction
 
 
@@ -48,23 +45,3 @@ def adjust_timezone(timezone, datetime_str):
     target_utctime = current_time.astimezone(pytz.UTC)
 
     return target_utctime
-
-
-def push_bidinfo(bidder_id, data):
-    from .serializers import AuctionSerializer
-
-    serializer = AuctionSerializer(data.get('auction'))
-    bid_info = {
-        'bidder': bidder_id,
-        'auction': serializer.data,
-        'amount': float(data.get('amount'))
-    }
-
-    channel_layer = get_channel_layer()
-    async_to_sync(channel_layer.group_send)(
-        f'auction_{bid_info["auction"]["id"]}',
-        {
-            'type': 'new_bid',
-            'bid': json.dumps(bid_info)
-        }
-    )

@@ -7,6 +7,7 @@ from drf_spectacular.utils import extend_schema, OpenApiParameter
 from drf_spectacular.types import OpenApiTypes
 
 from AuctionManager.models import Auction
+from notifications.tasks import payment_notification
 from .models import Payment
 from .services import ChapaPaymentService
 from .serializers import VerifySerializer, TransferSerializer
@@ -103,5 +104,12 @@ class ChapaPaymentVerifyView(APIView):
         
         chapa = ChapaPaymentService()
         payment_info = chapa.verify_payment(payment, tx_ref)
+
+        if payment_info['status'] == 'success':
+            message = 'We are pleased to confirm that we have received your payment'
+        else:
+            message = 'Your payment failed'
+        
+        payment_notification(message, payment.id)
 
         return Response(payment_info, status=status.HTTP_200_OK)

@@ -17,5 +17,8 @@ urlpatterns = [
     # Auction management endpoints
     path('api/', include('AuctionManager.urls'), name='auction-managment'),
 
-    path('api/payment/', include('Payments.urls'), name='payment-redirect')
+    # Auction Payment routes
+    path('api/payment/', include('Payments.urls'), name='payment-redirect'),
+
+    path('api/notification/', include('notifications.urls'), name='notifications')
 ]
