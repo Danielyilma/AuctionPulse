@@ -34,6 +34,7 @@ INSTALLED_APPS = [
     'UserAccountManager',
     'AuctionManager',
     'Payments',
+    'notifications',
     'rest_framework',
     'drf_spectacular',
     'rest_framework_simplejwt',
