@@ -56,15 +56,18 @@ Ensure you have the following installed:
     ```
 
 - Configure environment variables:
-AuctionPulse uses environment variables to manage sensitive data such as the database credentials, Google OAuth2 keys, and Chapa payment keys. These settings should be placed in a .env file.
 
-Create a .env file in the project root directory (where manage.py is located):
+    AuctionPulse uses environment variables to manage sensitive data
+    such as the database credentials, Google OAuth2 keys, and payment keys.
+    These settings should be placed in a .env file.
+
+    Create a .env file in the project root directory (where manage.py is located):
 
     ``` bash
     touch .env
     ```
     
-Add the following variables to your .env file:
+    Add the following variables to your .env file:
 
     ``` env
     # Django secret key
