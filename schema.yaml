@@ -2,6 +2,647 @@ openapi: 3.0.3
 info:
   title: AuctionPulse API
   version: 1.0.0
-  description: Your project description
-paths: {}
-components: {}
+  description: A RESTful API for managing online auctions, enabling users to create
+    listings, place bids, and track auction statuses.
+paths:
+  /api/auction:
+    post:
+      operationId: auction_create
+      description: Endpoint to create an aution
+      summary: Create auction
+      tags:
+      - auction
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                item:
+                  type: object
+                  properties:
+                    name:
+                      type: string
+                      example: Guitar
+                    condition:
+                      type: string
+                      enum:
+                      - new
+                      - used
+                      - refurbished
+                      example: used
+                    main_image:
+                      type: string
+                      example: image_url_or_base64
+                  required:
+                  - name
+                  - condition
+                  - main_image
+                title:
+                  type: string
+                  example: Vintage Guitar
+                description:
+                  type: string
+                  example: A beautiful vintage guitar from the 1960s, in excellent
+                    condition.
+                duration:
+                  type: integer
+                  example: 1
+                  description: 'Duration in days (example: 1 day)'
+                start_time:
+                  type: string
+                  format: date-time
+                  example: '2024-09-16 10:33:12'
+                starting_price:
+                  type: string
+                  pattern: ^[0-9]+(\.[0-9]{1,2})?$
+                  example: '200.35'
+                  description: Starting price with up to two decimal places.
+                timezone:
+                  type: string
+                  example: Africa/Addis_Ababa
+                images:
+                  type: array
+                  description: List of images to upload for the auction
+                  example:
+                  - image1.jpg
+                  - image2.jpg
+              required:
+              - item
+              - title
+              - duration
+              - start_time
+              - starting_price
+              - timezone
+              - images
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Auction'
+          description: ''
+  /api/auction/{id}:
+    get:
+      operationId: auction_retrieve
+      description: Endpoint to get an auction
+      summary: Get specific auction by id
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - auction
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Auction'
+          description: ''
+  /api/auction/list/:
+    get:
+      operationId: auction_list_list
+      description: Endpoint to get auction listing for active auctions
+      summary: Get Auctions
+      tags:
+      - auction
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Auction'
+          description: ''
+  /api/bid/:
+    post:
+      operationId: bid_create
+      description: Endpoint to submit a bid
+      summary: Bid Submission
+      tags:
+      - bid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Bid'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Bid'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Bid'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Bid'
+          description: ''
+  /api/image/:
+    get:
+      operationId: image_list
+      description: Endpoint to get the describing images for the item, required query
+        param item_id
+      summary: Get images for an item
+      tags:
+      - image
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Image'
+          description: ''
+  /api/notification/{id}/update/:
+    patch:
+      operationId: notification_update_partial_update
+      description: mark notification as read
+      summary: mark as read
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - notification
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedNotification'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedNotification'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedNotification'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Notification'
+          description: ''
+  /api/notification/list/:
+    get:
+      operationId: notification_list_list
+      description: list all unread notifications for a user
+      summary: List all unread notifications
+      tags:
+      - notification
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Notification'
+          description: ''
+  /api/payment/redirect/{auction_id}:
+    get:
+      operationId: payment_redirect_retrieve
+      description: Process payment for the auction winner.
+      summary: winner payment route
+      parameters:
+      - in: path
+        name: auction_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - payment
+      security:
+      - jwtAuth: []
+      responses:
+        '301':
+          headers:
+            Location:
+              schema:
+                type: string
+                format: uri
+              description: Chapa Accept Payment
+          description: No response body
+  /api/payment/transfer/{auction_id}:
+    post:
+      operationId: payment_transfer_create
+      description: chapa bank transfer initialization
+      summary: Tranfer Payment
+      parameters:
+      - in: path
+        name: auction_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - payment
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Transfer'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Transfer'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Transfer'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Verify'
+          description: ''
+  /api/payment/verify:
+    get:
+      operationId: payment_verify_retrieve
+      description: Chapa's accept payment verification
+      summary: Verify Payment
+      tags:
+      - payment
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Verify'
+          description: ''
+  /api/user/oauth/google/redirect/:
+    get:
+      operationId: user_oauth_google_redirect_retrieve
+      description: Endpoint for loging in user with google account
+      summary: Google Login Redirect
+      tags:
+      - Google Login
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '301':
+          headers:
+            Location:
+              schema:
+                type: string
+                format: uri
+              description: Google OAuth2
+          description: No response body
+  /api/user/refresh/:
+    post:
+      operationId: user_refresh_create
+      description: |-
+        Takes a refresh type JSON web token and returns an access type JSON web
+        token if the refresh token is valid.
+      tags:
+      - user
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TokenRefresh'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TokenRefresh'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TokenRefresh'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenRefresh'
+          description: ''
+  /api/user/signup/:
+    post:
+      operationId: user_signup_create
+      description: Endpoint for creating a new user. Requires email and password,
+        other fields first name and last name
+      summary: Creating A New User
+      tags:
+      - user
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/User'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/User'
+        required: true
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+  /api/user/token/:
+    post:
+      operationId: user_token_create
+      description: Endpoint to log user into the system, required email and password.
+      summary: Login User
+      tags:
+      - user
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CustomTokenObtainPair'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/CustomTokenObtainPair'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CustomTokenObtainPair'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenRefresh'
+          description: ''
+components:
+  schemas:
+    Auction:
+      type: object
+      description: |-
+        - serialize the Auction with auction item and the item's images model
+        - set the attribute start_time to UTC timezone with respect to user timezone
+        - schedule the auction start and end time after the object is created
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        item:
+          $ref: '#/components/schemas/Item'
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+        title:
+          type: string
+          maxLength: 60
+        description:
+          type: string
+        duration:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+          description: Duration in days
+        start_time:
+          type: string
+          format: date-time
+        starting_price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        current_bid:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+      required:
+      - created_at
+      - description
+      - duration
+      - id
+      - item
+      - start_time
+      - starting_price
+      - title
+      - updated_at
+    Bid:
+      type: object
+      description: serialize the bid model
+      properties:
+        amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        auction_id:
+          type: integer
+      required:
+      - amount
+      - auction_id
+    ConditionEnum:
+      enum:
+      - new
+      - used
+      - refurbished
+      type: string
+      description: |-
+        * `new` - New
+        * `used` - Used
+        * `refurbished` - Refurbished
+    CustomTokenObtainPair:
+      type: object
+      description: serializer for authentication the user
+      properties:
+        email:
+          type: string
+          writeOnly: true
+        password:
+          type: string
+          writeOnly: true
+      required:
+      - email
+      - password
+    Image:
+      type: object
+      description: serialize the Image model
+      properties:
+        picture:
+          type: string
+          format: uri
+    Item:
+      type: object
+      description: serialize the Item model
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 60
+        condition:
+          $ref: '#/components/schemas/ConditionEnum'
+        main_image:
+          type: string
+          format: uri
+      required:
+      - id
+      - name
+    Notification:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        message:
+          type: string
+          readOnly: true
+        is_read:
+          type: boolean
+        notification_type:
+          allOf:
+          - $ref: '#/components/schemas/NotificationTypeEnum'
+          readOnly: true
+        user:
+          type: integer
+          readOnly: true
+      required:
+      - id
+      - message
+      - notification_type
+      - user
+    NotificationTypeEnum:
+      enum:
+      - bid
+      - auction_end
+      - outbid
+      - payment
+      type: string
+      description: |-
+        * `bid` - Bid Notification
+        * `auction_end` - Auction End Notification
+        * `outbid` - Outbid Notification
+        * `payment` - Payment Notification
+    PatchedNotification:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        message:
+          type: string
+          readOnly: true
+        is_read:
+          type: boolean
+        notification_type:
+          allOf:
+          - $ref: '#/components/schemas/NotificationTypeEnum'
+          readOnly: true
+        user:
+          type: integer
+          readOnly: true
+    StatusEnum:
+      enum:
+      - success
+      - failed
+      - pending
+      type: string
+      description: |-
+        * `success` - Success
+        * `failed` - Failed
+        * `pending` - Pending
+    TokenRefresh:
+      type: object
+      properties:
+        access:
+          type: string
+          readOnly: true
+        refresh:
+          type: string
+          writeOnly: true
+      required:
+      - access
+      - refresh
+    Transfer:
+      type: object
+      properties:
+        account_name:
+          type: string
+        account_number:
+          type: string
+        bank_code:
+          type: integer
+      required:
+      - account_name
+      - account_number
+      - bank_code
+    User:
+      type: object
+      description: User serializer
+      properties:
+        email:
+          type: string
+          format: email
+          pattern: ^[\w.@+-]+$
+          maxLength: 255
+        first_name:
+          type: string
+          maxLength: 60
+        last_name:
+          type: string
+          maxLength: 128
+        password:
+          type: string
+          writeOnly: true
+        provider:
+          type: string
+          maxLength: 60
+      required:
+      - email
+    Verify:
+      type: object
+      properties:
+        message:
+          type: string
+        status:
+          $ref: '#/components/schemas/StatusEnum'
+        tx_ref:
+          type: string
+      required:
+      - message
+      - status
+      - tx_ref
+  securitySchemes:
+    jwtAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
