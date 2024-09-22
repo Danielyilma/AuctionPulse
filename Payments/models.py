@@ -17,7 +17,7 @@ class Payment(TimeStampMixin, models.Model):
     )
     currency = models.CharField(max_length=10, default='ETB')
     payment_id = models.CharField(max_length=255, unique=True)
-    reason = models.CharField(max_length=10, default='auction_payment')
+    reason = models.CharField(max_length=60, default='auction_payment')
 
     @classmethod
     def create_payment(cls, auction, user, **kwargs):
