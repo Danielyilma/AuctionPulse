@@ -3,7 +3,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.serializers import ValidationError
-from drf_spectacular.utils import extend_schema, OpenApiParameter
+from drf_spectacular.utils import extend_schema, OpenApiResponse, OpenApiExample
 from drf_spectacular.types import OpenApiTypes
 
 from AuctionManager.models import Auction
@@ -15,17 +15,22 @@ from .serializers import VerifySerializer, TransferSerializer
 
 @extend_schema(
     summary='winner payment route',
-    description='Process payment for the auction winner.',
-    responses={301: None},
-    parameters=[
-        OpenApiParameter(
-            name="Location",
-            type=OpenApiTypes.URI,
-            location=OpenApiParameter.HEADER,
-            description="Chapa Accept Payment",
-            response=[301]
-        )
-    ]
+    description='Returns Process payment url for the auction winner.',
+    responses={
+        200: OpenApiResponse(
+            response=dict,
+                description='Returns the payment URL for the user to proceed with the payment.',
+                examples=[
+                    OpenApiExample(
+                        'Example Response',
+                        value={"payment_url": "http://example.com"}
+                    )
+                ]
+        ),
+        404:  OpenApiResponse(
+            description='Auction not found'
+        ),
+    }
 )
 class ChapaPaymentRedirectView(APIView):
     '''Chapa payment initialization redirect url'''
@@ -37,7 +42,7 @@ class ChapaPaymentRedirectView(APIView):
         chapa = ChapaPaymentService()
         payment_url = chapa.get_paymenturl(auction, request.user)
 
-        return Response(status=status.HTTP_302_FOUND, headers={'Location': payment_url})
+        return Response({'payment_url': payment_url}, status=status.HTTP_302_FOUND)
 
 
 @extend_schema(
